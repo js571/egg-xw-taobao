@@ -1,0 +1,15 @@
+export enum Api {
+  万能解析 ='taobao.tbk.sc.general.link.parse',
+  淘口令创建 = 'taobao.tbk.tpwd.create',
+  商品详情获取 = 'taobao.tbk.item.info.get',
+  获取口令情况 = 'taobao.tbk.sc.tpwd.report.get',
+  长链转短链 = 'taobao.tbk.spread.get',
+  物料搜索 = 'taobao.tbk.sc.material.optional.upgrade',
+  物料精选 = 'taobao.tbk.sc.material.recommend',
+  订单获取 = 'taobao.tbk.sc.order.details.get',
+  处罚订单获取 = 'taobao.tbk.sc.punish.order.get',
+  维权订单获取 = 'taobao.tbk.sc.relation.refund',
+  淘礼金使用信息 = 'taobao.tbk.dg.vegas.tlj.report',
+  万能转链 = 'taobao.tbk.sc.general.link.convert',
+  猜你喜欢 = 'taobao.tbk.sc.material.recommend',
+}
