@@ -1,30 +1,25 @@
+import TaobaoService from './lib/service';
 
-
-interface EggTbkClientOption {
+interface EggCpsTaobaoClientOption {
   appKey: string,
   secret: string,
   restUrl: string
 }
 
-interface EggTbkSDkClientsOption {
-  [clientName: string]: EggTbkClientOption;
+interface EggCpsTaobaoClientsOption {
+  [clientName: string]: EggCpsTaobaoClientOption;
 }
 
-interface EggTbkConfig {
+interface EggCpsTaobaoConfig {
   default?: object;
   app?: boolean;
   agent?: boolean;
-  client?: EggTbkClientOption;
-  clients?: EggTbkClientOption;
+  client?: EggCpsTaobaoClientsOption;
+  clients?: EggCpsTaobaoClientsOption;
 }
 
 declare module 'egg' {
   interface Application {
-    tbk: {
-      request: <T = any>(apiName: string, params: Record<string, any>) => Promise<T>;
-    }
-  }
-  interface EggAppConfig {
-    tbk: EggTbkConfig;
+    taobao: TaobaoService
   }
 }

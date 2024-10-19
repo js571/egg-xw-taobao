@@ -1,5 +1,5 @@
 import { Api } from './constant';
-import { LinkInfoDto, ItemInfoGet, LinkParse, MaterialOptionalUpgrade, OrderGet, SearchOption, CouponInfo } from './type';
+import { LinkInfoDto, ItemInfoGet, LinkParse, MaterialOptionalUpgrade, OrderGet, SearchOption, CouponInfo, searchCommonType } from './type';
 import TbkService from '@xw-tech/tbk-sdk';
 import { mapNewSearchToOld, handlePwd, handlePage, parseTbResult, handleItemId } from './util';
 
@@ -7,7 +7,8 @@ declare module 'egg' {
   interface Application {
     tbk: {
       request: <T = any>(apiName: string, params: Record<string, any>) => Promise<T>;
-    }
+    },
+    taobao: TaobaoService
   }
 }
 
@@ -215,7 +216,7 @@ class TaobaoService {
       return Promise.reject(e);
     }
   }
-  async tbGoodsQuery(session: string, searchOption: SearchOption, suffix = false) {
+  async tbGoodsQuery(session: string, searchOption: SearchOption, suffix = false): Promise<searchCommonType[]> {
     const {
       q,
       pid,
@@ -418,7 +419,7 @@ class TaobaoService {
       return res.data;
     } catch (e) {
       console.log(e);
-      return {};
+      return Promise.reject(e);
     }
   }
 }
