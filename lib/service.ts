@@ -1,5 +1,5 @@
 import { Api } from './constant';
-import { LinkInfoDto, ItemInfoGet, LinkParse, MaterialOptionalUpgrade, OrderGet, SearchOption } from './type';
+import { LinkInfoDto, ItemInfoGet, LinkParse, MaterialOptionalUpgrade, OrderGet, SearchOption, CouponInfo } from './type';
 import TbkService from '@xw-tech/tbk-sdk';
 import { mapNewSearchToOld, handlePwd, handlePage, parseTbResult, handleItemId } from './util';
 
@@ -375,7 +375,7 @@ class TaobaoService {
       item_id: itemId,
     };
     try {
-      const res = await this.tbkService.request(Api.猜你喜欢, params);
+      const res = await this.tbkService.request<MaterialOptionalUpgrade>(Api.猜你喜欢, params);
       const list = res.result_list.map_data.map(item => parseTbResult(item, rate));
       return list;
     } catch (e) {
@@ -399,11 +399,26 @@ class TaobaoService {
       params.device_encrypt = 'MD5';
     }
     try {
-      const res = await this.tbkService.request(Api.猜你喜欢, params);
+      const res = await this.tbkService.request<MaterialOptionalUpgrade>(Api.猜你喜欢, params);
       const list = res.result_list.map_data.map(item => parseTbResult(item, rate));
       return list;
     } catch (e) {
       return Promise.reject(e);
+    }
+  }
+  async getCouponInfo(itemId: string, couponId: string) {
+    const params = {
+      item_id: itemId,
+      activity_id: couponId,
+    };
+    try {
+      const res = await this.tbkService.request<{
+        data: CouponInfo
+      }>(Api.优惠券信息, params);
+      return res.data;
+    } catch (e) {
+      console.log(e);
+      return {};
     }
   }
 }

@@ -12,4 +12,5 @@ export enum Api {
   淘礼金使用信息 = 'taobao.tbk.dg.vegas.tlj.report',
   万能转链 = 'taobao.tbk.sc.general.link.convert',
   猜你喜欢 = 'taobao.tbk.sc.material.recommend',
+  优惠券信息 = 'taobao.tbk.coupon.get',
 }

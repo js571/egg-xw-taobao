@@ -279,3 +279,15 @@ export type searchCommonType = {
   white_image: string,
   zk_final_price: number,
 };
+
+export type CouponInfo = {
+  coupon_activity_id: string,
+  coupon_amount: string,
+  coupon_end_time: string,
+  coupon_remain_count: number,
+  coupon_src_scene: number,
+  coupon_start_fee: string,
+  coupon_start_time: string,
+  coupon_total_count: number,
+  coupon_type: number
+};
