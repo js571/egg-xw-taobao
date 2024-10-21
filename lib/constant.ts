@@ -10,7 +10,11 @@ export enum Api {
   处罚订单获取 = 'taobao.tbk.sc.punish.order.get',
   维权订单获取 = 'taobao.tbk.sc.relation.refund',
   淘礼金使用信息 = 'taobao.tbk.dg.vegas.tlj.report',
+  淘礼金生成 = 'taobao.tbk.dg.vegas.tlj.create',
+  淘礼金停止 = 'taobao.tbk.dg.vegas.tlj.stop',
   万能转链 = 'taobao.tbk.sc.general.link.convert',
   猜你喜欢 = 'taobao.tbk.sc.material.recommend',
   优惠券信息 = 'taobao.tbk.coupon.get',
+  推广者处罚订单 = 'taobao.tbk.dg.punish.order.get',
+  授权 = 'taobao.top.auth.token.create',
 }

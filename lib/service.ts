@@ -197,6 +197,21 @@ class TaobaoService {
       return Promise.reject(e);
     }
   }
+  async punishDgOrderGet(pageNo: number, pageSize: number, startTime: string, span: number, siteId: number) {
+    try {
+      const params = {
+        page_no: pageNo,
+        start_time: startTime,
+        span,
+        page_size: pageSize,
+        site_id: siteId,
+      };
+      const res = await this.tbkService.request<any>(Api.推广者处罚订单, { af_order_option: JSON.stringify(params) });
+      return res;
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  }
   async refundOrderGet(session: string, searchType: number, refundType: number, pageNo = 1, pageSize = 100, bizType = 1, startTime: string) {
     try {
       const data = {
@@ -417,6 +432,104 @@ class TaobaoService {
         data: CouponInfo
       }>(Api.优惠券信息, params);
       return res.data;
+    } catch (e) {
+      console.log(e);
+      return Promise.reject(e);
+    }
+  }
+  async getTljReport(rightsId: string, pid: string) {
+    const { adzoneId } = this.parsePid(pid);
+    const params = {
+      rights_id: rightsId,
+      adzone_id: adzoneId,
+    };
+    try {
+      const res = await this.tbkService.request<{
+        model: {
+          extra: {
+            alipay_amt: string;
+            alipay_num: number;
+            cm_settle_amt: string;
+            get_rate: string;
+            pre_pub_share_fee_for_disp: string;
+            refund_num: number;
+            refund_sum_amt: string;
+            remaining_amt: string;
+            remaining_num: number;
+            use_num: number;
+            use_rate: string;
+            use_sum_amt: string;
+            win_pv: number;
+            win_sum_amt: string;
+          }
+        }
+      }>(Api.淘礼金使用信息, params);
+      return res.model;
+    } catch (e) {
+      console.log(e);
+      return Promise.reject(e);
+    }
+  }
+  async createTlj(pid: string, item_id: string, per_face: string, send_start_time: string, send_end_time: string, use_end_time: string, total_num = 1, name = '专享淘礼金福利', user_total_win_num_limit = 1, use_start_time: string, use_end_time_mode = 1, security_switch = true, campaign_type = '', use_threshold = 0) {
+    const { adzoneId } = this.parsePid(pid);
+    const params: any = {
+      adzone_id: adzoneId,
+      item_id,
+      per_face,
+      send_start_time,
+      send_end_time,
+      use_end_time,
+      total_num,
+      name,
+      user_total_win_num_limit,
+      use_start_time,
+      use_end_time_mode,
+      security_switch,
+    };
+    if (use_end_time_mode === 1) {
+      delete params.use_start_time;
+    }
+    if (campaign_type) {
+      params.campaign_type = campaign_type;
+    }
+    if (use_threshold) {
+      params.use_threshold = use_threshold;
+    }
+    try {
+      const res = await this.tbkService.request<any>(Api.淘礼金生成, params);
+      if (!res.result.success) {
+        return Promise.reject(res.result.msg_info);
+      }
+      return res.result.model;
+    } catch (e) {
+      console.log(e);
+      return Promise.reject(e);
+    }
+  }
+  async stopTlj(rightsId: string, pid: string) {
+    const { adzoneId } = this.parsePid(pid);
+    const params = {
+      rights_id: rightsId,
+      adzone_id: adzoneId,
+    };
+    try {
+      const res = await this.tbkService.request<any>(Api.淘礼金停止, params);
+      if (!res.result_success) {
+        return Promise.reject(res.result_success);
+      }
+      return res.model;
+    } catch (e) {
+      console.log(e);
+      return Promise.reject(e);
+    }
+  }
+  async auth(code: string) {
+    const params = {
+      code,
+    };
+    try {
+      const res = await this.tbkService.request<any>(Api.授权, params);
+      return JSON.parse(res.token_result);
     } catch (e) {
       console.log(e);
       return Promise.reject(e);
