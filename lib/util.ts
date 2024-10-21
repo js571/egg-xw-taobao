@@ -23,7 +23,7 @@ export const mapNewSearchToOld = (res: SearchItem, suffix = false) => {
   ) {
     const coupon = res.price_promotion_info.final_promotion_path_list.final_promotion_path_map_data[0];
     couponAmount = coupon.promotion_fee;
-    coupon_start_time = dayjs(Number(coupon.promotion_end_time)).format('YYYY-MM-DD HH:mm:ss');
+    coupon_start_time = dayjs(Number(coupon.promotion_start_time)).format('YYYY-MM-DD HH:mm:ss');
     coupon_end_time = dayjs(Number(coupon.promotion_end_time)).format('YYYY-MM-DD HH:mm:ss');
     coupon_id = coupon.promotion_id;
     promotion_desc = coupon.promotion_desc;

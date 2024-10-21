@@ -152,6 +152,14 @@ class TaobaoService {
       return Promise.reject(e);
     }
   }
+  async materialOptionalYh(session: string, q: string, pid: string, relation_id = '', biz_scene_id = 1, promotion_type?: number) {
+    try {
+      const res = await this.materialOptionalUpgrade(session, q, pid, relation_id, biz_scene_id, promotion_type);
+      return res.map(item => mapNewSearchToOld(item));
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  }
   async prodRecommend(session: string, pid: string, material_id: number, page_no = 1, page_size = 20) {
     const { adzoneId, siteId } = this.parsePid(pid);
     const params: any = {
@@ -223,8 +231,6 @@ class TaobaoService {
         biz_type: bizType,
       };
       const params = { session, search_option: JSON.stringify(data) };
-      console.log('data', params);
-
       const res = await this.tbkService.request<any>(Api.维权订单获取, params);
       return res;
     } catch (e) {
