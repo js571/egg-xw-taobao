@@ -1,6 +1,6 @@
 {
   "name": "@xw-tech/egg-xw-taobao",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "xw专用淘宝联盟cps接口二次业务封装",
   "publishConfig": {
     "access": "public",

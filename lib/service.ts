@@ -1,20 +1,42 @@
 import { Api } from './constant';
-import { LinkInfoDto, ItemInfoGet, LinkParse, MaterialOptionalUpgrade, OrderGet, SearchOption, CouponInfo, searchCommonType } from './type';
+import {
+  LinkInfoDto,
+  ItemInfoGet,
+  LinkParse,
+  MaterialOptionalUpgrade,
+  OrderGet,
+  SearchOption,
+  CouponInfo,
+  searchCommonType,
+} from './type';
 import TbkService from '@xw-tech/tbk-sdk';
-import { mapNewSearchToOld, handlePwd, handlePage, parseTbResult, handleItemId } from './util';
+import {
+  mapNewSearchToOld,
+  handlePwd,
+  handlePage,
+  parseTbResult,
+  handleItemId,
+} from './util';
 
 declare module 'egg' {
   interface Application {
     tbk: {
-      request: <T = any>(apiName: string, params: Record<string, any>) => Promise<T>;
-    },
-    taobao: TaobaoService
+      request: <T = any>(
+        apiName: string,
+        params: Record<string, any>
+      ) => Promise<T>;
+    };
+    taobao: TaobaoService;
   }
 }
 
 class TaobaoService {
   private readonly tbkService: TbkService;
-  constructor(appKey: string, secret: string, restUrl = 'https://gw.api.taobao.com/router/rest') {
+  constructor(
+    appKey: string,
+    secret: string,
+    restUrl = 'https://gw.api.taobao.com/router/rest'
+  ) {
     this.tbkService = new TbkService(appKey, secret, restUrl);
   }
   parsePid(pid: string) {
@@ -25,7 +47,12 @@ class TaobaoService {
     };
   }
   // 万能解析
-  async linkParse(session: string, pwd: string, pid: string, relationId?: string) {
+  async linkParse(
+    session: string,
+    pwd: string,
+    pid: string,
+    relationId?: string
+  ) {
     const { adzoneId } = this.parsePid(pid);
     const params: any = {
       adzone_id: adzoneId,
@@ -44,8 +71,12 @@ class TaobaoService {
     const reg = /[\?&]id=([a-zA-Z0-9-]*)/;
 
     try {
-      const response = await this.tbkService.request<LinkParse>(Api.万能解析, params);
-      const dto = response?.data?.material_url_list?.material_url_list?.[0].link_info_dto as LinkInfoDto;
+      const response = await this.tbkService.request<LinkParse>(
+        Api.万能解析,
+        params
+      );
+      const dto = response?.data?.material_url_list?.material_url_list?.[0]
+        .link_info_dto as LinkInfoDto;
       if (dto && dto.material_id) {
         const res: {
           biz_scene_id: number;
@@ -58,7 +89,9 @@ class TaobaoService {
         };
         if (dto.material_id) {
           res.num_iid = dto.material_id;
-          res.origin_url = 'https://uland.taobao.com/item/edetail?id=' + dto.material_id;
+          res.origin_url =
+            dto.tpwd_origin_url ||
+            'https://uland.taobao.com/item/edetail?id=' + dto.material_id;
         } else {
           res.origin_url = dto.tpwd_origin_url;
           const itemId = dto.tpwd_origin_url.match(reg)?.[1];
@@ -66,7 +99,8 @@ class TaobaoService {
         }
         return res;
       }
-      err.sub_msg = response.data.material_url_list.material_url_list[0].msg as string;
+      err.sub_msg = response.data.material_url_list.material_url_list[0]
+        .msg as string;
       return Promise.reject(err);
     } catch (e) {
       console.log('错误', e);
@@ -79,7 +113,11 @@ class TaobaoService {
    * @param bizId 1-动态ID转链场景，2-消费者比价场景，3-商品库导购场景（不填默认为1）
    * @param promotionType   1-自购省，2-推广赚（代理模式专属ID，代理模式必填，非代理模式不用填写该字段）
    */
-  async itemInfoGet(itemId: string, bizId: 1 | 2 | 3 = 1, promotionType: 1| 2) {
+  async itemInfoGet(
+    itemId: string,
+    bizId: 1 | 2 | 3 = 1,
+    promotionType: 1 | 2
+  ) {
     const params: any = {
       num_iids: itemId + '',
       platform: 2,
@@ -91,7 +129,10 @@ class TaobaoService {
       params.promotion_type = promotionType;
     }
     try {
-      const response = await this.tbkService.request<ItemInfoGet>(Api.商品详情获取, params);
+      const response = await this.tbkService.request<ItemInfoGet>(
+        Api.商品详情获取,
+        params
+      );
       const res = response.results.n_tbk_item?.[0] || {};
       return res;
     } catch (e) {
@@ -106,10 +147,10 @@ class TaobaoService {
     try {
       const res = await this.tbkService.request<{
         data: {
-          model: string,
-          password_simple: string
-        },
-        request_id: string
+          model: string;
+          password_simple: string;
+        };
+        request_id: string;
       }>(Api.淘口令创建, params);
       return res;
     } catch (e) {
@@ -117,9 +158,11 @@ class TaobaoService {
     }
   }
   async spreadGet(url: string) {
-    const json = [{
-      url,
-    }];
+    const json = [
+      {
+        url,
+      },
+    ];
     const urls = JSON.stringify(json);
     const data = {
       requests: urls,
@@ -127,7 +170,14 @@ class TaobaoService {
     const res = await this.tbkService.request(Api.长链转短链, data);
     return res;
   }
-  async materialOptionalUpgrade(session: string, q: string, pid: string, relation_id = '', biz_scene_id = 1, promotion_type?: number) {
+  async materialOptionalUpgrade(
+    session: string,
+    q: string,
+    pid: string,
+    relation_id = '',
+    biz_scene_id = 1,
+    promotion_type?: number
+  ) {
     const { adzoneId, siteId } = this.parsePid(pid);
     const params: any = {
       q,
@@ -146,21 +196,44 @@ class TaobaoService {
       params.promotion_type = promotion_type;
     }
     try {
-      const res = await this.tbkService.request<MaterialOptionalUpgrade>(Api.物料搜索, params);
+      const res = await this.tbkService.request<MaterialOptionalUpgrade>(
+        Api.物料搜索,
+        params
+      );
       return res.result_list.map_data;
     } catch (e) {
       return Promise.reject(e);
     }
   }
-  async materialOptionalYh(session: string, q: string, pid: string, relation_id = '', biz_scene_id = 1, promotion_type?: number) {
+  async materialOptionalYh(
+    session: string,
+    q: string,
+    pid: string,
+    relation_id = '',
+    biz_scene_id = 1,
+    promotion_type?: number
+  ) {
     try {
-      const res = await this.materialOptionalUpgrade(session, q, pid, relation_id, biz_scene_id, promotion_type);
-      return res.map(item => mapNewSearchToOld(item));
+      const res = await this.materialOptionalUpgrade(
+        session,
+        q,
+        pid,
+        relation_id,
+        biz_scene_id,
+        promotion_type
+      );
+      return res.map((item) => mapNewSearchToOld(item));
     } catch (e) {
       return Promise.reject(e);
     }
   }
-  async prodRecommend(session: string, pid: string, material_id: number, page_no = 1, page_size = 20) {
+  async prodRecommend(
+    session: string,
+    pid: string,
+    material_id: number,
+    page_no = 1,
+    page_size = 20
+  ) {
     const { adzoneId, siteId } = this.parsePid(pid);
     const params: any = {
       page_size,
@@ -171,13 +244,24 @@ class TaobaoService {
       session,
     };
     try {
-      const res = await this.tbkService.request<MaterialOptionalUpgrade>(Api.物料精选, params);
+      const res = await this.tbkService.request<MaterialOptionalUpgrade>(
+        Api.物料精选,
+        params
+      );
       return res.result_list.map_data;
     } catch (e) {
       return Promise.reject(e);
     }
   }
-  async orderGet(session: string, start_time: string, end_time: string, page_no = 1, query_type = 1, order_scene = 1, position_index = '') {
+  async orderGet(
+    session: string,
+    start_time: string,
+    end_time: string,
+    page_no = 1,
+    query_type = 1,
+    order_scene = 1,
+    position_index = ''
+  ) {
     const params: any = {
       query_type,
       page_no,
@@ -205,7 +289,13 @@ class TaobaoService {
       return Promise.reject(e);
     }
   }
-  async punishDgOrderGet(pageNo: number, pageSize: number, startTime: string, span: number, siteId: number) {
+  async punishDgOrderGet(
+    pageNo: number,
+    pageSize: number,
+    startTime: string,
+    span: number,
+    siteId: number
+  ) {
     try {
       const params = {
         page_no: pageNo,
@@ -214,13 +304,23 @@ class TaobaoService {
         page_size: pageSize,
         site_id: siteId,
       };
-      const res = await this.tbkService.request<any>(Api.推广者处罚订单, { af_order_option: JSON.stringify(params) });
+      const res = await this.tbkService.request<any>(Api.推广者处罚订单, {
+        af_order_option: JSON.stringify(params),
+      });
       return res;
     } catch (e) {
       return Promise.reject(e);
     }
   }
-  async refundOrderGet(session: string, searchType: number, refundType: number, pageNo = 1, pageSize = 100, bizType = 1, startTime: string) {
+  async refundOrderGet(
+    session: string,
+    searchType: number,
+    refundType: number,
+    pageNo = 1,
+    pageSize = 100,
+    bizType = 1,
+    startTime: string
+  ) {
     try {
       const data = {
         search_type: searchType,
@@ -237,7 +337,11 @@ class TaobaoService {
       return Promise.reject(e);
     }
   }
-  async tbGoodsQuery(session: string, searchOption: SearchOption, suffix = false): Promise<searchCommonType[]> {
+  async tbGoodsQuery(
+    session: string,
+    searchOption: SearchOption,
+    suffix = false
+  ): Promise<searchCommonType[]> {
     const {
       q,
       pid,
@@ -284,7 +388,10 @@ class TaobaoService {
       params.biz_scene_id = biz_scene_id;
     }
     try {
-      const res = await this.tbkService.request<MaterialOptionalUpgrade>(Api.物料搜索, params);
+      const res = await this.tbkService.request<MaterialOptionalUpgrade>(
+        Api.物料搜索,
+        params
+      );
       const list = res.result_list.map_data;
       if (list.length === 1 && !list[0].item_id) {
         const newSearchOption: SearchOption = {
@@ -293,13 +400,18 @@ class TaobaoService {
         };
         return this.tbGoodsQuery(session, newSearchOption, needSuffix);
       }
-      const newList = list.map(item => mapNewSearchToOld(item, suffix));
+      const newList = list.map((item) => mapNewSearchToOld(item, suffix));
       return newList;
     } catch (e) {
       return Promise.reject(e);
     }
   }
-  async pwdParse(session: string, pwd: string, pid: string, relationId: string) {
+  async pwdParse(
+    session: string,
+    pwd: string,
+    pid: string,
+    relationId: string
+  ) {
     const { adzoneId, siteId } = this.parsePid(pid);
     const params: any = {
       adzone_id: adzoneId,
@@ -329,7 +441,12 @@ class TaobaoService {
       return Promise.reject(e);
     }
   }
-  async getActivity(session: string, pid: string, pageId: string, relationId: string) {
+  async getActivity(
+    session: string,
+    pid: string,
+    pageId: string,
+    relationId: string
+  ) {
     const { adzoneId, siteId } = this.parsePid(pid);
     const params: any = {
       adzone_id: adzoneId,
@@ -354,7 +471,14 @@ class TaobaoService {
       return Promise.reject(e);
     }
   }
-  async privilegeNew(session: string, itemId: string, pid: string, relationId = '', bizId = 1, promotionType = 2) {
+  async privilegeNew(
+    session: string,
+    itemId: string,
+    pid: string,
+    relationId = '',
+    bizId = 1,
+    promotionType = 2
+  ) {
     const _itemId = itemId + '';
     const { adzoneId, siteId } = this.parsePid(pid);
     const params: any = {
@@ -375,9 +499,11 @@ class TaobaoService {
       const finalRes = {
         coupon_end_time: parseRes.coupon && parseRes.coupon.coupon_end_time,
         coupon_info: parseRes.coupon && parseRes.coupon.coupon_desc,
-        coupon_remain_count: parseRes.coupon && parseRes.coupon.coupon_remain_count,
+        coupon_remain_count:
+          parseRes.coupon && parseRes.coupon.coupon_remain_count,
         coupon_start_time: parseRes.coupon && parseRes.coupon.coupon_start_time,
-        coupon_total_count: parseRes.coupon && parseRes.coupon.coupon_remain_count,
+        coupon_total_count:
+          parseRes.coupon && parseRes.coupon.coupon_remain_count,
         ...parseRes.info,
       };
       return finalRes;
@@ -385,7 +511,14 @@ class TaobaoService {
       return Promise.reject(e);
     }
   }
-  async getSimilar(session: string, pid: string, itemId: string, pageNo = 1, pageSize = 20, rate = 1) {
+  async getSimilar(
+    session: string,
+    pid: string,
+    itemId: string,
+    pageNo = 1,
+    pageSize = 20,
+    rate = 1
+  ) {
     const { adzoneId, siteId } = this.parsePid(pid);
     const params = {
       session,
@@ -397,15 +530,27 @@ class TaobaoService {
       item_id: itemId,
     };
     try {
-      const res = await this.tbkService.request<MaterialOptionalUpgrade>(Api.猜你喜欢, params);
-      const list = res.result_list.map_data.map(item => parseTbResult(item, rate));
+      const res = await this.tbkService.request<MaterialOptionalUpgrade>(
+        Api.猜你喜欢,
+        params
+      );
+      const list = res.result_list.map_data.map((item) =>
+        parseTbResult(item, rate)
+      );
       return list;
     } catch (e) {
       return Promise.reject(e);
     }
-
   }
-  async getLike(session: string, pageNo = 1, pageSize = 20, deviceType: string, deviceValue: string, pid: string, rate = 1) {
+  async getLike(
+    session: string,
+    pageNo = 1,
+    pageSize = 20,
+    deviceType: string,
+    deviceValue: string,
+    pid: string,
+    rate = 1
+  ) {
     const { adzoneId, siteId } = this.parsePid(pid);
     const params: any = {
       session,
@@ -421,8 +566,13 @@ class TaobaoService {
       params.device_encrypt = 'MD5';
     }
     try {
-      const res = await this.tbkService.request<MaterialOptionalUpgrade>(Api.猜你喜欢, params);
-      const list = res.result_list.map_data.map(item => parseTbResult(item, rate));
+      const res = await this.tbkService.request<MaterialOptionalUpgrade>(
+        Api.猜你喜欢,
+        params
+      );
+      const list = res.result_list.map_data.map((item) =>
+        parseTbResult(item, rate)
+      );
       return list;
     } catch (e) {
       return Promise.reject(e);
@@ -435,7 +585,7 @@ class TaobaoService {
     };
     try {
       const res = await this.tbkService.request<{
-        data: CouponInfo
+        data: CouponInfo;
       }>(Api.优惠券信息, params);
       return res.data;
     } catch (e) {
@@ -467,8 +617,8 @@ class TaobaoService {
             use_sum_amt: string;
             win_pv: number;
             win_sum_amt: string;
-          }
-        }
+          };
+        };
       }>(Api.淘礼金使用信息, params);
       return res.model;
     } catch (e) {
@@ -476,7 +626,22 @@ class TaobaoService {
       return Promise.reject(e);
     }
   }
-  async createTlj(pid: string, item_id: string, per_face: string, send_start_time: string, send_end_time: string, use_end_time: string, total_num = 1, name = '专享淘礼金福利', user_total_win_num_limit = 1, use_start_time: string, use_end_time_mode = 1, security_switch = true, campaign_type = '', use_threshold = 0) {
+  async createTlj(
+    pid: string,
+    item_id: string,
+    per_face: string,
+    send_start_time: string,
+    send_end_time: string,
+    use_end_time: string,
+    total_num = 1,
+    name = '专享淘礼金福利',
+    user_total_win_num_limit = 1,
+    use_start_time: string,
+    use_end_time_mode = 1,
+    security_switch = true,
+    campaign_type = '',
+    use_threshold = 0
+  ) {
     const { adzoneId } = this.parsePid(pid);
     const params: any = {
       adzone_id: adzoneId,
