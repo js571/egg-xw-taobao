@@ -471,6 +471,48 @@ class TaobaoService {
       return Promise.reject(e);
     }
   }
+  async privilegeType3(
+    session: string,
+    pwd: string,
+    pid: string,
+    relationId = ''
+  ) {
+    const { adzoneId, siteId } = this.parsePid(pid);
+    const params: any = {
+      platform: 2,
+      adzone_id: adzoneId,
+      site_id: siteId,
+      session,
+      material_list: pwd.replace(/,/g, '，'),
+    };
+    if (relationId) {
+      params.relation_id = relationId;
+    }
+    try {
+      const response = await this.tbkService.request<any>(Api.万能转链, params);
+      const isValidInfo =
+        response.data.material_url_list &&
+        response.data.material_url_list.material_url_list &&
+        response.data.material_url_list.material_url_list.length &&
+        Object.keys(
+          response.data.material_url_list.material_url_list[0].link_info_dto
+        ).length;
+      if (isValidInfo) {
+        const item: {
+          cps_full_tpwd: string;
+          cps_long_url: string;
+          cps_short_tpwd: string;
+          cps_short_url: string;
+          material_type: number;
+          tk_biz_type: number;
+        } = response.data.material_url_list.material_url_list[0].link_info_dto;
+        return item;
+      }
+      throw new Error(response.data.material_url_list.material_url_list[0].msg);
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  }
   async privilegeNew(
     session: string,
     itemId: string,
