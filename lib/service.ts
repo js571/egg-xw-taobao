@@ -519,7 +519,8 @@ class TaobaoService {
     pid: string,
     relationId = '',
     bizId = 1,
-    promotionType = 2
+    promotionType = 2,
+    required_link_type = ''
   ) {
     const _itemId = itemId + '';
     const { adzoneId, siteId } = this.parsePid(pid);
@@ -534,6 +535,9 @@ class TaobaoService {
     if (relationId) {
       params.relation_id = relationId;
       params.promotion_type = promotionType;
+    }
+    if (required_link_type) {
+      params.required_link_type = required_link_type;
     }
     try {
       const res = await this.tbkService.request<any>(Api.万能转链, params);
