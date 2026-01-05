@@ -67,7 +67,10 @@ export const mapNewSearchToOld = (res: SearchItem, suffix = false) => {
     user_type: itemInfo.user_type,
     volume: itemInfo.volume,
     white_image: itemInfo.white_image,
-    zk_final_price: Number(res.price_promotion_info.zk_final_price),
+    zk_final_price: Number(
+      res.price_promotion_info.final_promotion_price ||
+        res.price_promotion_info.zk_final_price
+    ),
   };
   if (suffix) {
     item.item_id = `${item.item_id}_2`;
