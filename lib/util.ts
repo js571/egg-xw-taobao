@@ -67,10 +67,10 @@ export const mapNewSearchToOld = (res: SearchItem, suffix = false) => {
     user_type: itemInfo.user_type,
     volume: itemInfo.volume,
     white_image: itemInfo.white_image,
-    zk_final_price: Number(
-      res.price_promotion_info.final_promotion_price ||
-        res.price_promotion_info.zk_final_price
+    final_promotion_price: Number(
+      res.price_promotion_info.final_promotion_price || 0
     ),
+    zk_final_price: Number(res.price_promotion_info.zk_final_price),
   };
   if (suffix) {
     item.item_id = `${item.item_id}_2`;
@@ -83,8 +83,9 @@ export const parseTbResult = (item: any, rate = 1) => {
   const _item = mapNewSearchToOld(item);
   const isMj = _item.coupon_start_fee * 1 > _item.zk_final_price * 1;
   const coupon = isMj ? 0 : _item.coupon_amount || 0;
-  const promotionPrice =
-    Number(Number(_item.zk_final_price - coupon).toFixed(2)) * 1;
+  const promotionPrice = _item.final_promotion_price
+    ? item.final_promotion_price
+    : Number(Number(_item.zk_final_price - coupon).toFixed(2)) * 1;
   const commissionRate = Number(_item.commission_rate);
   const couponList: any[] = [];
   if (_item.coupon_amount) {
