@@ -84,7 +84,7 @@ export const parseTbResult = (item: any, rate = 1) => {
   const isMj = _item.coupon_start_fee * 1 > _item.zk_final_price * 1;
   const coupon = isMj ? 0 : _item.coupon_amount || 0;
   const promotionPrice = _item.final_promotion_price
-    ? item.final_promotion_price
+    ? _item.final_promotion_price
     : Number(Number(_item.zk_final_price - coupon).toFixed(2)) * 1;
   const commissionRate = Number(_item.commission_rate);
   const couponList: any[] = [];
